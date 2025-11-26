@@ -1,0 +1,157 @@
+<template>
+  <div
+    class="h-full flex flex-col bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 w-full sm:w-64 transition-colors duration-300">
+    <!-- Header -->
+    <div
+      class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-white dark:bg-gray-900/50 sm:bg-transparent backdrop-blur-sm">
+      <h1 class="font-bold text-lg tracking-tight text-gray-900 dark:text-white">LiteNote</h1>
+      <div class="flex items-center gap-1">
+        <button @click="toggleTheme"
+          class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
+          :title="`切換主題 (${themeLabel})`">
+          <Sun v-if="theme === 'light'" class="w-5 h-5" />
+          <Moon v-else-if="theme === 'dark'" class="w-5 h-5" />
+          <Monitor v-else class="w-5 h-5" />
+        </button>
+        <button @click="handleCreate"
+          class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-900 dark:text-white"
+          title="新增記事">
+          <Plus class="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Note List -->
+    <div class="flex-1 overflow-y-auto">
+      <div v-if="notes.length === 0" class="p-8 text-gray-400 dark:text-gray-600 text-center text-sm">
+        尚無記事<br>點擊上方 + 新增
+      </div>
+      <div v-for="note in sortedNotes" :key="note.id" @click="selectNote(note.id)"
+        class="p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors group relative select-none"
+        :class="{ 'bg-white dark:bg-gray-800 border-l-4 border-l-black dark:border-l-white shadow-sm': lastActiveNoteId === note.id }"
+        @dblclick="startRenaming(note)">
+        <div v-if="renamingId === note.id" class="mr-6">
+          <input ref="renameInput" v-model="renameValue" @blur="finishRenaming" @keyup.enter="finishRenaming"
+            @click.stop
+            class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-black dark:focus:border-white" />
+        </div>
+        <template v-else>
+          <h3 class="font-medium text-gray-800 dark:text-gray-200 truncate pr-6 text-sm">
+            {{ note.title || getTitle(note.content) }}
+          </h3>
+          <p class="text-xs text-gray-500 dark:text-gray-500 mt-1 font-mono">
+            {{ formatDate(note.updatedAt) }}
+          </p>
+        </template>
+
+        <div
+          class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button @click.stop="startRenaming(note)"
+            class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+            title="重新命名">
+            <Edit2 class="w-3.5 h-3.5" />
+          </button>
+          <button @click.stop="confirmDelete(note)"
+            class="p-1.5 text-gray-400 hover:text-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
+            title="刪除">
+            <Trash2 class="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <Modal :is-open="showDeleteModal" title="刪除記事" :is-destructive="true" confirm-text="刪除"
+      @close="showDeleteModal = false" @confirm="executeDelete">
+      確定要刪除此記事嗎？此動作無法復原。
+    </Modal>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, nextTick } from 'vue';
+import { useNoteStorage, type Note } from '../composables/useStorage';
+import { useTheme } from '../composables/useTheme';
+import { Plus, Trash2, Edit2, Sun, Moon, Monitor } from 'lucide-vue-next';
+import Modal from './Modal.vue';
+
+const emit = defineEmits(['close-sidebar']);
+
+const { notes, lastActiveNoteId, createNote, deleteNote, updateNoteTitle } = useNoteStorage();
+const { theme, toggleTheme, themeLabel } = useTheme();
+
+// Delete Logic
+const showDeleteModal = ref(false);
+const noteToDelete = ref<string | null>(null);
+
+function confirmDelete(note: Note) {
+  // Smart delete: if empty, delete immediately without confirmation
+  if (!note.content.trim() && !note.title) {
+    deleteNote(note.id);
+    return;
+  }
+
+  noteToDelete.value = note.id;
+  showDeleteModal.value = true;
+}
+
+function executeDelete() {
+  if (noteToDelete.value) {
+    deleteNote(noteToDelete.value);
+    noteToDelete.value = null;
+    showDeleteModal.value = false;
+  }
+}
+
+// Rename Logic
+const renamingId = ref<string | null>(null);
+const renameValue = ref('');
+const renameInput = ref<HTMLInputElement[] | null>(null);
+
+function startRenaming(note: Note) {
+  renamingId.value = note.id;
+  renameValue.value = note.title || getTitle(note.content);
+  nextTick(() => {
+    renameInput.value?.[0]?.focus();
+  });
+}
+
+function finishRenaming() {
+  if (renamingId.value) {
+    // If empty, it will fall back to first line in display, so we can save as undefined or empty string
+    // Let's save as string, but if it matches the auto-generated title, maybe we can keep it?
+    // User asked for "Rename", so we save what they typed.
+    updateNoteTitle(renamingId.value, renameValue.value);
+    renamingId.value = null;
+  }
+}
+
+// General
+const sortedNotes = computed(() => {
+  return [...notes.value].sort((a, b) => b.updatedAt - a.updatedAt);
+});
+
+function selectNote(id: string) {
+  lastActiveNoteId.value = id;
+  emit('close-sidebar');
+}
+
+function handleCreate() {
+  createNote();
+  emit('close-sidebar');
+}
+
+function getTitle(content: string) {
+  const firstLine = content.split('\n')[0]?.trim();
+  return firstLine || '無標題';
+}
+
+function formatDate(timestamp: number) {
+  return new Date(timestamp).toLocaleString('zh-TW', {
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+</script>
