@@ -136,6 +136,15 @@
               <option value="en">English</option>
             </select>
           </div>
+
+          <!-- PWA Install Button (Always visible) -->
+          <div>
+            <button @click="handleInstallClick"
+              class="w-full flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 py-2 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors font-medium text-sm">
+              <Download class="w-4 h-4" />
+              {{ t('settings.install_app') }}
+            </button>
+          </div>
         </div>
 
         <!-- Security Tab -->
@@ -206,6 +215,59 @@
         </div>
       </div>
     </Modal>
+    <!-- PWA Install Prompt (Sidebar Bottom) -->
+    <div v-if="canInstall && !isDismissed" class="p-4 border-t border-gray-200 dark:border-gray-800">
+      <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 relative">
+        <button @click="dismiss"
+          class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+          <X class="w-4 h-4" />
+        </button>
+        <div class="flex items-center gap-2 mb-2">
+          <Download class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <span class="font-medium text-sm text-blue-900 dark:text-blue-100">{{ t('settings.install_app') }}</span>
+        </div>
+        <p class="text-xs text-blue-700 dark:text-blue-200 mb-3 leading-relaxed">
+          {{ t('settings.install_desc') }}
+        </p>
+        <div class="flex gap-2">
+          <button @click="install"
+            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-1.5 rounded transition-colors">
+            {{ t('settings.install_btn') }}
+          </button>
+          <button @click="dismiss"
+            class="flex-1 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-xs font-medium py-1.5 rounded transition-colors">
+            {{ t('settings.dismiss_btn') }}
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- Install Help Modal -->
+    <Modal :is-open="showInstallHelp" :title="t('settings.install_app')" :confirm-text="t('actions.close')"
+      :show-cancel="false" @close="showInstallHelp = false" @confirm="showInstallHelp = false">
+      <div class="space-y-4">
+        <p class="text-gray-600 dark:text-gray-300">{{ t('settings.install_manual_desc') }}</p>
+
+        <!-- Chrome/Edge -->
+        <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+          <h4 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+            <Monitor class="w-4 h-4" /> Desktop (Chrome/Edge)
+          </h4>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            {{ t('settings.install_chrome_desc') }}
+          </p>
+        </div>
+
+        <!-- Safari/iOS -->
+        <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+          <h4 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+            <Monitor class="w-4 h-4" /> iOS / Safari
+          </h4>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            {{ t('settings.install_safari_desc') }}
+          </p>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -213,7 +275,8 @@
 import { computed, ref, nextTick } from 'vue';
 import { useNoteStorage, type Note } from '../composables/useStorage';
 import { useTheme } from '../composables/useTheme';
-import { Plus, Trash2, Edit2, Sun, Moon, Monitor, MoreVertical, Settings, Info } from 'lucide-vue-next';
+import { usePWA } from '../composables/usePWA';
+import { Plus, Trash2, Edit2, Sun, Moon, Monitor, MoreVertical, Settings, Info, Download, X } from 'lucide-vue-next';
 import Modal from './Modal.vue';
 import { version } from '../../package.json';
 import { useI18n } from 'vue-i18n';
@@ -224,9 +287,19 @@ const emit = defineEmits(['close-sidebar']);
 const { notes, lastActiveNoteId, createNote, deleteNote, updateNoteTitle, changePin } = useNoteStorage();
 const { theme, toggleTheme } = useTheme();
 const { t } = useI18n();
+const { canInstall, isDismissed, install, dismiss } = usePWA();
 
 // About Logic
 const showAboutModal = ref(false);
+const showInstallHelp = ref(false);
+
+const handleInstallClick = () => {
+  if (canInstall.value) {
+    install();
+  } else {
+    showInstallHelp.value = true;
+  }
+};
 
 // Mobile Menu Logic
 const mobileMenuId = ref<string | null>(null);

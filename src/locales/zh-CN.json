@@ -48,7 +48,14 @@
         "language": "语言",
         "auto": "自动 (跟随系统)",
         "general": "常规",
-        "security": "安全"
+        "security": "安全",
+        "install_app": "安装应用程序",
+        "install_desc": "安装 LiteNote 到您的设备以获得更好的体验",
+        "install_btn": "安装",
+        "dismiss_btn": "暂不安装",
+        "install_manual_desc": "由于浏览器限制，请按照以下步骤手动安装：",
+        "install_chrome_desc": "点击浏览器地址栏右侧的“安装”图标，或菜单中的“安装 LiteNote”。",
+        "install_safari_desc": "点击下方的“分享”按钮，然后选择“添加到主屏幕”。"
     },
     "messages": {
         "fill_all": "请填写所有栏位",

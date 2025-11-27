@@ -48,7 +48,14 @@
         "language": "Language",
         "auto": "Auto (System)",
         "general": "General",
-        "security": "Security"
+        "security": "Security",
+        "install_app": "Install App",
+        "install_desc": "Install LiteNote for a better experience",
+        "install_btn": "Install",
+        "dismiss_btn": "Not Now",
+        "install_manual_desc": "Due to browser restrictions, please follow these steps to install manually:",
+        "install_chrome_desc": "Click the 'Install' icon in the address bar, or 'Install LiteNote' in the menu.",
+        "install_safari_desc": "Tap the 'Share' button below, then select 'Add to Home Screen'."
     },
     "messages": {
         "fill_all": "Please fill all fields",
