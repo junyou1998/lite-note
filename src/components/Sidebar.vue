@@ -9,6 +9,11 @@
       class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-white dark:bg-gray-900/50 sm:bg-transparent backdrop-blur-sm">
       <h1 class="font-bold text-lg tracking-tight text-gray-900 dark:text-white">LiteNote</h1>
       <div class="flex items-center gap-1">
+        <button @click="openSettings"
+          class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
+          title="設定">
+          <Settings class="w-5 h-5" />
+        </button>
         <button @click="toggleTheme"
           class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
           :title="`切換主題 (${themeLabel})`">
@@ -96,6 +101,35 @@
       @close="showDeleteModal = false" @confirm="executeDelete">
       確定要刪除此記事嗎？此動作無法復原。
     </Modal>
+
+    <!-- Settings Modal -->
+    <Modal :is-open="showSettingsModal" title="設定" confirm-text="變更密碼" @close="showSettingsModal = false"
+      @confirm="handleChangePin">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">舊 PIN 碼</label>
+          <input v-model="oldPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
+            placeholder="輸入目前的 PIN 碼" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">新 PIN 碼</label>
+          <input v-model="newPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
+            placeholder="輸入新的 PIN 碼 (至少 4 碼)" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">確認新 PIN 碼</label>
+          <input v-model="confirmNewPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
+            placeholder="再次輸入新的 PIN 碼" />
+        </div>
+
+        <div v-if="settingsError" class="text-red-500 text-sm">{{ settingsError }}</div>
+        <div v-if="settingsSuccess" class="text-green-500 text-sm">{{ settingsSuccess }}</div>
+        <div v-if="isChangingPin" class="text-gray-500 text-sm">正在加密資料...</div>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -103,12 +137,12 @@
 import { computed, ref, nextTick } from 'vue';
 import { useNoteStorage, type Note } from '../composables/useStorage';
 import { useTheme } from '../composables/useTheme';
-import { Plus, Trash2, Edit2, Sun, Moon, Monitor, MoreVertical } from 'lucide-vue-next';
+import { Plus, Trash2, Edit2, Sun, Moon, Monitor, MoreVertical, Settings } from 'lucide-vue-next';
 import Modal from './Modal.vue';
 
 const emit = defineEmits(['close-sidebar']);
 
-const { notes, lastActiveNoteId, createNote, deleteNote, updateNoteTitle } = useNoteStorage();
+const { notes, lastActiveNoteId, createNote, deleteNote, updateNoteTitle, changePin } = useNoteStorage();
 const { theme, toggleTheme, themeLabel } = useTheme();
 
 // Mobile Menu Logic
@@ -119,6 +153,65 @@ function toggleMobileMenu(id: string) {
     mobileMenuId.value = null;
   } else {
     mobileMenuId.value = id;
+  }
+}
+
+// Settings Logic
+const showSettingsModal = ref(false);
+const oldPin = ref('');
+const newPin = ref('');
+const confirmNewPin = ref('');
+const settingsError = ref('');
+const settingsSuccess = ref('');
+const isChangingPin = ref(false);
+
+function openSettings() {
+  showSettingsModal.value = true;
+  oldPin.value = '';
+  newPin.value = '';
+  confirmNewPin.value = '';
+  settingsError.value = '';
+  settingsSuccess.value = '';
+}
+
+async function handleChangePin() {
+  settingsError.value = '';
+  settingsSuccess.value = '';
+
+  if (!oldPin.value || !newPin.value || !confirmNewPin.value) {
+    settingsError.value = '請填寫所有欄位';
+    return;
+  }
+
+  if (newPin.value.length < 4) {
+    settingsError.value = '新 PIN 碼至少需要 4 碼';
+    return;
+  }
+
+  if (newPin.value !== confirmNewPin.value) {
+    settingsError.value = '新 PIN 碼不一致';
+    return;
+  }
+
+  if (oldPin.value === newPin.value) {
+    settingsError.value = '新 PIN 碼不能與舊 PIN 碼相同';
+    return;
+  }
+
+  isChangingPin.value = true;
+  try {
+    await changePin(oldPin.value, newPin.value);
+    settingsSuccess.value = '密碼變更成功！';
+    oldPin.value = '';
+    newPin.value = '';
+    confirmNewPin.value = '';
+    setTimeout(() => {
+      showSettingsModal.value = false;
+    }, 1500);
+  } catch (e: any) {
+    settingsError.value = e.message || '變更失敗';
+  } finally {
+    isChangingPin.value = false;
   }
 }
 

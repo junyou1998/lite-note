@@ -113,6 +113,39 @@ export function useNoteStorage() {
 
     const getNote = (id: string) => notes.value.find(n => n.id === id);
 
+    const changePin = async (oldPin: string, newPin: string) => {
+        if (!isUnlocked.value) throw new Error('請先解鎖');
+
+        // Verify old PIN (double check)
+        const { hashPassword } = useCrypto();
+        const oldHash = await hashPassword(oldPin);
+        if (oldHash !== passwordHash.value) {
+            throw new Error('舊密碼錯誤');
+        }
+
+        // Generate new salt and key
+        const newSalt = generateSalt();
+        const newKey = await deriveKey(newPin, newSalt);
+        const newHash = await hashPassword(newPin);
+
+        // Re-encrypt data
+        try {
+            const json = JSON.stringify(notes.value);
+            const encrypted = await encryptData(json, newKey);
+
+            // Commit changes
+            cryptoSalt.value = newSalt;
+            passwordHash.value = newHash;
+            rawStorage.value = encrypted;
+            encryptionKey = newKey; // Update current session key
+
+            return true;
+        } catch (e) {
+            console.error('Change PIN failed:', e);
+            throw new Error('變更密碼失敗');
+        }
+    };
+
     return {
         notes,
         passwordHash,
@@ -123,6 +156,7 @@ export function useNoteStorage() {
         deleteNote,
         updateNote,
         updateNoteTitle,
-        getNote
+        getNote,
+        changePin
     };
 }
