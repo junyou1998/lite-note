@@ -1,0 +1,82 @@
+{
+    "app": {
+        "title": "LiteNote",
+        "no_notes": "尚無記事",
+        "click_to_add": "點擊上方 + 新增",
+        "welcome": "歡迎回來",
+        "setup_title": "設定密碼",
+        "setup_desc": "請設定您的存取密碼",
+        "unlock_desc": "請輸入密碼以解鎖",
+        "setup_btn": "設定並進入",
+        "unlock_btn": "解鎖",
+        "warning": "請務必記住您的密碼，遺失將無法復原資料。"
+    },
+    "actions": {
+        "settings": "設定",
+        "about": "關於",
+        "toggle_theme": "切換主題",
+        "add_note": "新增記事",
+        "rename": "重新命名",
+        "delete": "刪除",
+        "cancel": "取消",
+        "confirm": "確認",
+        "close": "關閉",
+        "download": "下載",
+        "unlock": "解鎖",
+        "enter": "進入",
+        "setup_pin": "設定 PIN 碼",
+        "collapse_sidebar": "收合側邊欄",
+        "expand_sidebar": "展開側邊欄",
+        "decrease_font": "縮小字體",
+        "increase_font": "放大字體"
+    },
+    "settings": {
+        "title": "設定",
+        "change_pin": "變更密碼",
+        "old_pin": "舊 PIN 碼",
+        "new_pin": "新 PIN 碼",
+        "confirm_new_pin": "確認新 PIN 碼",
+        "placeholder_old": "輸入目前的 PIN 碼",
+        "placeholder_new": "輸入新的 PIN 碼 (至少 4 碼)",
+        "placeholder_confirm": "再次輸入新的 PIN 碼",
+        "language": "語言",
+        "auto": "自動 (跟隨系統)",
+        "general": "一般",
+        "security": "安全"
+    },
+    "messages": {
+        "fill_all": "請填寫所有欄位",
+        "pin_min_length": "新 PIN 碼至少需要 4 碼",
+        "pin_mismatch": "新 PIN 碼不一致",
+        "pin_same": "新 PIN 碼不能與舊 PIN 碼相同",
+        "pin_changed": "密碼變更成功！",
+        "change_failed": "變更失敗",
+        "encrypting": "正在加密資料...",
+        "delete_confirm": "確定要刪除此記事嗎？此動作無法復原。",
+        "pin_error": "密碼錯誤",
+        "pin_setup_mismatch": "PIN 碼不一致",
+        "pin_setup_hint": "請輸入 4-6 位數 PIN 碼",
+        "enter_pin": "請輸入 PIN 碼",
+        "confirm_pin": "確認 PIN 碼"
+    },
+    "about": {
+        "title": "關於 LiteNote",
+        "desc_1": "LiteNote 是一個專注於隱私與極簡體驗的筆記應用。",
+        "desc_2": "您的資料經過端對端加密，安全地儲存在您的裝置上，絕不上傳雲端。",
+        "sponsor": "如果您喜歡這個工具，歡迎贊助開發者一杯咖啡 ☕",
+        "made_by": "Made with ❤️ by JunYou"
+    },
+    "editor": {
+        "untitled": "無標題",
+        "words": "字數",
+        "chars": "字元",
+        "placeholder": "開始輸入...",
+        "no_active_note": "沒有開啟的記事",
+        "select_note_hint": "請從左側選擇或建立新記事"
+    },
+    "theme": {
+        "light": "淺色",
+        "dark": "深色",
+        "system": "系統"
+    }
+}

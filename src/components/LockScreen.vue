@@ -19,28 +19,30 @@
           <Lock class="w-8 h-8 text-white dark:text-black" />
         </div>
         <h2 class="text-2xl font-bold text-gray-800 dark:text-white tracking-tight">
-          {{ isSetup ? '設定密碼' : '歡迎回來' }}
+          {{ isSetup ? t('app.setup_title') : t('app.welcome') }}
         </h2>
         <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">
-          {{ isSetup ? '請設定您的存取密碼' : '請輸入密碼以解鎖' }}
+          {{ isSetup ? t('app.setup_desc') : t('app.unlock_desc') }}
         </p>
       </div>
 
-      <div class="relative mb-8">
-        <input v-model="pin" type="password" inputmode="numeric" pattern="[0-9]*"
-          class="w-full text-center text-4xl tracking-[0.5em] bg-transparent border-b-2 border-gray-200 dark:border-gray-700 focus:border-black dark:focus:border-white outline-none py-2 text-gray-900 dark:text-white transition-colors font-mono"
-          placeholder="••••" @keyup.enter="submit" autofocus />
-      </div>
+      <form @submit.prevent="submit">
+        <div class="relative mb-8">
+          <input v-model="pin" type="password" inputmode="numeric" pattern="[0-9]*"
+            class="w-full text-center text-4xl tracking-[0.5em] bg-transparent border-b-2 border-gray-200 dark:border-gray-700 focus:border-black dark:focus:border-white outline-none py-2 text-gray-900 dark:text-white transition-colors font-mono"
+            placeholder="••••" autofocus autocomplete="current-password" />
+        </div>
 
-      <button @click="submit"
-        class="w-full bg-black dark:bg-white text-white dark:text-black py-3.5 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-200 transition-all transform hover:scale-[1.02] active:scale-[0.98] font-medium shadow-lg">
-        {{ isSetup ? '設定並進入' : '解鎖' }}
-      </button>
+        <button type="submit"
+          class="w-full bg-black dark:bg-white text-white dark:text-black py-3.5 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-200 transition-all transform hover:scale-[1.02] active:scale-[0.98] font-medium shadow-lg">
+          {{ isSetup ? t('app.setup_btn') : t('app.unlock_btn') }}
+        </button>
+      </form>
 
       <p v-if="error" class="text-red-500 mt-4 text-sm font-medium animate-pulse">{{ error }}</p>
 
       <p v-if="isSetup" class="text-gray-400 dark:text-gray-600 mt-6 text-xs">
-        請務必記住您的密碼，遺失將無法復原資料。
+        {{ t('app.warning') }}
       </p>
     </div>
   </div>
@@ -52,11 +54,13 @@ import { useCrypto } from '../composables/useCrypto';
 import { useStorage } from '@vueuse/core';
 import { useNoteStorage } from '../composables/useStorage';
 import { Lock } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 
 const emit = defineEmits(['unlocked']);
 
 const { hashPassword } = useCrypto();
 const { init } = useNoteStorage();
+const { t } = useI18n();
 const storedHash = useStorage<string | null>('litenote_password_hash', null);
 const pin = ref('');
 const error = ref('');
@@ -71,7 +75,7 @@ onMounted(() => {
 
 const submit = async () => {
   if (pin.value.length < 4) {
-    error.value = 'PIN 碼至少需要 4 碼';
+    error.value = t('messages.pin_min_length');
     return;
   }
 
@@ -92,12 +96,12 @@ const submit = async () => {
         await init(pin.value);
         emit('unlocked');
       } else {
-        error.value = '密碼錯誤';
+        error.value = t('messages.pin_error');
         pin.value = '';
       }
     }
   } catch (e: any) {
-    error.value = e.message || '發生錯誤';
+    error.value = e.message || t('messages.change_failed');
   } finally {
     isLoading.value = false;
   }

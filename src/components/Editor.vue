@@ -7,7 +7,7 @@
       <div class="flex items-center">
         <button @click="toggleDesktopSidebar"
           class="hidden md:flex p-2 -ml-2 text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
-          :title="isDesktopSidebarOpen ? '收合側邊欄' : '展開側邊欄'">
+          :title="isDesktopSidebarOpen ? t('actions.collapse_sidebar') : t('actions.expand_sidebar')">
           <PanelLeft class="w-5 h-5" />
         </button>
       </div>
@@ -17,22 +17,22 @@
         <div class="flex items-center gap-2 border-r border-gray-200 dark:border-gray-800 pr-4 mr-4">
           <button @click="decreaseFontSize"
             class="p-1 text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-            title="縮小字體">
+            :title="t('actions.decrease_font')">
             <Minus class="w-4 h-4" />
           </button>
           <span class="text-xs text-gray-500 font-mono w-8 text-center">{{ fontSize }}px</span>
           <button @click="increaseFontSize"
             class="p-1 text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-            title="放大字體">
+            :title="t('actions.increase_font')">
             <Plus class="w-4 h-4" />
           </button>
         </div>
         <div class="text-xs text-gray-400 dark:text-gray-500 font-mono mr-4">
-          {{ charCount }} 字元
+          {{ charCount }} {{ t('editor.chars') }}
         </div>
         <button @click="downloadTxt"
           class="p-2 text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-          title="下載 TXT">
+          :title="t('actions.download')">
           <Download class="w-5 h-5" />
         </button>
       </div>
@@ -40,11 +40,11 @@
 
     <textarea v-if="currentNote" ref="textareaRef" v-model="content"
       class="flex-1 w-full h-full p-6 resize-none outline-none text-gray-800 dark:text-gray-200 bg-transparent leading-relaxed font-sans placeholder-gray-300 dark:placeholder-gray-700"
-      :style="{ fontSize: `${fontSize}px` }" placeholder="開始輸入..." spellcheck="false"></textarea>
+      :style="{ fontSize: `${fontSize}px` }" :placeholder="t('editor.placeholder')" spellcheck="false"></textarea>
 
     <div v-else class="flex-1 flex flex-col items-center justify-center text-gray-300 dark:text-gray-700 select-none">
-      <p class="mb-2">沒有開啟的記事</p>
-      <p class="text-sm">請從左側選擇或建立新記事</p>
+      <p class="mb-2">{{ t('editor.no_active_note') }}</p>
+      <p class="text-sm">{{ t('editor.select_note_hint') }}</p>
     </div>
   </div>
 </template>
@@ -55,9 +55,11 @@ import { useStorage } from '@vueuse/core';
 import { useNoteStorage } from '../composables/useStorage';
 import { useLayout } from '../composables/useLayout';
 import { Download, Plus, Minus, PanelLeft } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 
 const { lastActiveNoteId, getNote, updateNote } = useNoteStorage();
 const { toggleDesktopSidebar, isDesktopSidebarOpen } = useLayout();
+const { t } = useI18n();
 
 const currentNote = computed(() => {
   if (!lastActiveNoteId.value) return null;
@@ -111,7 +113,7 @@ function downloadTxt() {
   link.href = url;
 
   // Use title if available, else first line, else untitled
-  const title = currentNote.value.title || content.value.split('\n')[0]?.trim() || 'untitled';
+  const title = currentNote.value.title || content.value.split('\n')[0]?.trim() || t('editor.untitled');
   // Sanitize filename
   const safeTitle = title.replace(/[^a-z0-9\u4e00-\u9fa5]/gi, '_').substring(0, 30);
 

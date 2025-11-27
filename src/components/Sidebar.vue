@@ -7,28 +7,28 @@
     <!-- Header -->
     <div
       class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-white dark:bg-gray-900/50 sm:bg-transparent backdrop-blur-sm">
-      <h1 class="font-bold text-lg tracking-tight text-gray-900 dark:text-white">LiteNote</h1>
+      <h1 class="font-bold text-lg tracking-tight text-gray-900 dark:text-white">{{ t('app.title') }}</h1>
       <div class="flex items-center gap-1">
         <button @click="showAboutModal = true"
           class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
-          title="關於">
+          :title="t('actions.about')">
           <Info class="w-5 h-5" />
         </button>
         <button @click="openSettings"
           class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
-          title="設定">
+          :title="t('actions.settings')">
           <Settings class="w-5 h-5" />
         </button>
         <button @click="toggleTheme"
           class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
-          :title="`切換主題 (${themeLabel})`">
+          :title="`${t('actions.toggle_theme')} (${t('theme.' + theme)})`">
           <Sun v-if="theme === 'light'" class="w-5 h-5" />
           <Moon v-else-if="theme === 'dark'" class="w-5 h-5" />
           <Monitor v-else class="w-5 h-5" />
         </button>
         <button @click="handleCreate"
           class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-900 dark:text-white"
-          title="新增記事">
+          :title="t('actions.add_note')">
           <Plus class="w-5 h-5" />
         </button>
       </div>
@@ -37,7 +37,7 @@
     <!-- Note List -->
     <div class="flex-1 overflow-y-auto">
       <div v-if="notes.length === 0" class="p-8 text-gray-400 dark:text-gray-600 text-center text-sm">
-        尚無記事<br>點擊上方 + 新增
+        {{ t('app.no_notes') }}<br>{{ t('app.click_to_add') }}
       </div>
       <div v-for="note in sortedNotes" :key="note.id" @click="handleNoteClick(note)"
         @touchstart="handleTouchStart(note)" @touchmove="handleTouchMove" @touchend="handleTouchEnd"
@@ -65,12 +65,12 @@
           <div class="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button @click.stop="startRenaming(note)"
               class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
-              title="重新命名">
+              :title="t('actions.rename')">
               <Edit2 class="w-3.5 h-3.5" />
             </button>
             <button @click.stop="confirmDelete(note)"
               class="p-1.5 text-gray-400 hover:text-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
-              title="刪除">
+              :title="t('actions.delete')">
               <Trash2 class="w-3.5 h-3.5" />
             </button>
           </div>
@@ -88,12 +88,12 @@
               <button @click.stop="startRenaming(note); mobileMenuId = null"
                 class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
                 <Edit2 class="w-3.5 h-3.5" />
-                重新命名
+                {{ t('actions.rename') }}
               </button>
               <button @click.stop="confirmDelete(note); mobileMenuId = null"
                 class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
                 <Trash2 class="w-3.5 h-3.5" />
-                刪除
+                {{ t('actions.delete') }}
               </button>
             </div>
           </div>
@@ -102,56 +102,93 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <Modal :is-open="showDeleteModal" title="刪除記事" :is-destructive="true" confirm-text="刪除"
-      @close="showDeleteModal = false" @confirm="executeDelete">
-      確定要刪除此記事嗎？此動作無法復原。
+    <Modal :is-open="showDeleteModal" :title="t('actions.delete')" :is-destructive="true"
+      :confirm-text="t('actions.delete')" @close="showDeleteModal = false" @confirm="executeDelete">
+      {{ t('messages.delete_confirm') }}
     </Modal>
 
     <!-- Settings Modal -->
-    <Modal :is-open="showSettingsModal" title="設定" confirm-text="變更密碼" @close="showSettingsModal = false"
-      @confirm="handleChangePin">
+    <Modal :is-open="showSettingsModal" :title="t('settings.title')" :confirm-text="settingsConfirmText"
+      :show-cancel="activeTab === 'security'" @close="showSettingsModal = false" @confirm="handleSettingsConfirm">
       <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">舊 PIN 碼</label>
-          <input v-model="oldPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6"
-            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
-            placeholder="輸入目前的 PIN 碼" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">新 PIN 碼</label>
-          <input v-model="newPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6"
-            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
-            placeholder="輸入新的 PIN 碼 (至少 4 碼)" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">確認新 PIN 碼</label>
-          <input v-model="confirmNewPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6"
-            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
-            placeholder="再次輸入新的 PIN 碼" />
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-200 dark:border-gray-700 mb-4">
+          <button @click="activeTab = 'general'" class="px-4 py-2 text-sm font-medium transition-colors border-b-2"
+            :class="activeTab === 'general' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'">
+            {{ t('settings.general') }}
+          </button>
+          <button @click="activeTab = 'security'" class="px-4 py-2 text-sm font-medium transition-colors border-b-2"
+            :class="activeTab === 'security' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'">
+            {{ t('settings.security') }}
+          </button>
         </div>
 
-        <div v-if="settingsError" class="text-red-500 text-sm">{{ settingsError }}</div>
-        <div v-if="settingsSuccess" class="text-green-500 text-sm">{{ settingsSuccess }}</div>
-        <div v-if="isChangingPin" class="text-gray-500 text-sm">正在加密資料...</div>
+        <!-- General Tab -->
+        <div v-if="activeTab === 'general'" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.language')
+              }}</label>
+            <select :value="locale" @change="e => setLocale((e.target as HTMLSelectElement).value)"
+              class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none">
+              <option value="auto">{{ t('settings.auto') }}</option>
+              <option value="zh-TW">繁體中文</option>
+              <option value="zh-CN">简体中文</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Security Tab -->
+        <form v-if="activeTab === 'security'" class="space-y-4" @submit.prevent="handleChangePin">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.old_pin')
+            }}</label>
+            <input v-model="oldPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+              class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
+              :placeholder="t('settings.placeholder_old')" autocomplete="current-password" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.new_pin')
+            }}</label>
+            <input v-model="newPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+              class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
+              :placeholder="t('settings.placeholder_new')" autocomplete="new-password" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+              t('settings.confirm_new_pin')
+            }}</label>
+            <input v-model="confirmNewPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+              class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
+              :placeholder="t('settings.placeholder_confirm')" autocomplete="new-password" />
+          </div>
+
+          <div v-if="settingsError" class="text-red-500 text-sm">{{ settingsError }}</div>
+          <div v-if="settingsSuccess" class="text-green-500 text-sm">{{ settingsSuccess }}</div>
+          <div v-if="isChangingPin" class="text-gray-500 text-sm">{{ t('messages.encrypting') }}</div>
+
+          <!-- Hidden submit button to enable Enter key submission -->
+          <button type="submit" class="hidden"></button>
+        </form>
       </div>
     </Modal>
 
     <!-- About Modal -->
-    <Modal :is-open="showAboutModal" title="關於 LiteNote" :show-cancel="false" confirm-text="關閉"
+    <Modal :is-open="showAboutModal" :title="t('about.title')" :show-cancel="false" :confirm-text="t('actions.close')"
       @close="showAboutModal = false" @confirm="showAboutModal = false">
       <div class="space-y-6 text-center">
         <div class="space-y-2">
           <p class="text-gray-600 dark:text-gray-300">
-            LiteNote 是一個專注於隱私與極簡體驗的筆記應用。
+            {{ t('about.desc_1') }}
           </p>
           <p class="text-gray-600 dark:text-gray-300 text-sm">
-            您的資料經過端對端加密，安全地儲存在您的裝置上，絕不上傳雲端。
+            {{ t('about.desc_2') }}
           </p>
         </div>
 
         <div class="pt-2 border-t border-gray-100 dark:border-gray-800">
           <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            如果您喜歡這個工具，歡迎贊助開發者一杯咖啡 ☕
+            {{ t('about.sponsor') }}
           </p>
           <a href="https://www.buymeacoffee.com/junyou" target="_blank" rel="noopener noreferrer"
             class="inline-block hover:opacity-90 transition-opacity">
@@ -164,7 +201,7 @@
           v{{ version }} |
           <a href="https://github.com/junyou1998/lite-note" target="_blank" rel="noopener noreferrer"
             class="hover:text-gray-600 dark:hover:text-gray-300 transition-colors border-b border-transparent hover:border-gray-400">
-            Made with ❤️ by JunYou
+            {{ t('about.made_by') }}
           </a>
         </div>
       </div>
@@ -179,11 +216,14 @@ import { useTheme } from '../composables/useTheme';
 import { Plus, Trash2, Edit2, Sun, Moon, Monitor, MoreVertical, Settings, Info } from 'lucide-vue-next';
 import Modal from './Modal.vue';
 import { version } from '../../package.json';
+import { useI18n } from 'vue-i18n';
+import { setLocale, locale } from '../i18n';
 
 const emit = defineEmits(['close-sidebar']);
 
 const { notes, lastActiveNoteId, createNote, deleteNote, updateNoteTitle, changePin } = useNoteStorage();
-const { theme, toggleTheme, themeLabel } = useTheme();
+const { theme, toggleTheme } = useTheme();
+const { t } = useI18n();
 
 // About Logic
 const showAboutModal = ref(false);
@@ -201,6 +241,7 @@ function toggleMobileMenu(id: string) {
 
 // Settings Logic
 const showSettingsModal = ref(false);
+const activeTab = ref<'general' | 'security'>('general');
 const oldPin = ref('');
 const newPin = ref('');
 const confirmNewPin = ref('');
@@ -208,8 +249,13 @@ const settingsError = ref('');
 const settingsSuccess = ref('');
 const isChangingPin = ref(false);
 
+const settingsConfirmText = computed(() => {
+  return activeTab.value === 'security' ? t('settings.change_pin') : t('actions.close');
+});
+
 function openSettings() {
   showSettingsModal.value = true;
+  activeTab.value = 'general'; // Reset to general tab
   oldPin.value = '';
   newPin.value = '';
   confirmNewPin.value = '';
@@ -217,34 +263,42 @@ function openSettings() {
   settingsSuccess.value = '';
 }
 
+function handleSettingsConfirm() {
+  if (activeTab.value === 'general') {
+    showSettingsModal.value = false;
+  } else {
+    handleChangePin();
+  }
+}
+
 async function handleChangePin() {
   settingsError.value = '';
   settingsSuccess.value = '';
 
   if (!oldPin.value || !newPin.value || !confirmNewPin.value) {
-    settingsError.value = '請填寫所有欄位';
+    settingsError.value = t('messages.fill_all');
     return;
   }
 
   if (newPin.value.length < 4) {
-    settingsError.value = '新 PIN 碼至少需要 4 碼';
+    settingsError.value = t('messages.pin_min_length');
     return;
   }
 
   if (newPin.value !== confirmNewPin.value) {
-    settingsError.value = '新 PIN 碼不一致';
+    settingsError.value = t('messages.pin_mismatch');
     return;
   }
 
   if (oldPin.value === newPin.value) {
-    settingsError.value = '新 PIN 碼不能與舊 PIN 碼相同';
+    settingsError.value = t('messages.pin_same');
     return;
   }
 
   isChangingPin.value = true;
   try {
     await changePin(oldPin.value, newPin.value);
-    settingsSuccess.value = '密碼變更成功！';
+    settingsSuccess.value = t('messages.pin_changed');
     oldPin.value = '';
     newPin.value = '';
     confirmNewPin.value = '';
@@ -252,7 +306,7 @@ async function handleChangePin() {
       showSettingsModal.value = false;
     }, 1500);
   } catch (e: any) {
-    settingsError.value = e.message || '變更失敗';
+    settingsError.value = e.message || t('messages.change_failed');
   } finally {
     isChangingPin.value = false;
   }
@@ -354,11 +408,11 @@ function handleCreate() {
 
 function getTitle(content: string) {
   const firstLine = content.split('\n')[0]?.trim();
-  return firstLine || '無標題';
+  return firstLine || t('editor.untitled');
 }
 
 function formatDate(timestamp: number) {
-  return new Date(timestamp).toLocaleString('zh-TW', {
+  return new Date(timestamp).toLocaleString(locale.value === 'auto' ? undefined : locale.value, {
     month: 'numeric',
     day: 'numeric',
     hour: '2-digit',

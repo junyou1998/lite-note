@@ -29,7 +29,7 @@
                         <button v-if="showCancel" type="button"
                             class="inline-flex justify-center rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 transition-colors"
                             @click="close">
-                            {{ cancelText }}
+                            {{ cancelText || t('actions.cancel') }}
                         </button>
                         <button type="button"
                             class="inline-flex justify-center rounded-lg px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 transition-colors"
@@ -38,7 +38,7 @@
                                     ? 'bg-red-600 hover:bg-red-700 focus-visible:ring-red-500'
                                     : 'bg-black dark:bg-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 focus-visible:ring-black'
                             ]" @click="confirm">
-                            {{ confirmText }}
+                            {{ confirmText || t('actions.confirm') }}
                         </button>
                     </div>
                 </div>
@@ -48,17 +48,15 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
 defineProps({
     isOpen: Boolean,
     title: String,
-    confirmText: {
-        type: String,
-        default: '確定'
-    },
-    cancelText: {
-        type: String,
-        default: '取消'
-    },
+    confirmText: String,
+    cancelText: String,
     showCancel: {
         type: Boolean,
         default: true

@@ -38,7 +38,7 @@
         <button @click="isMobileSidebarOpen = true" class="p-2 -ml-2 text-gray-600 dark:text-gray-400">
           <Menu class="w-6 h-6" />
         </button>
-        <span class="font-bold text-gray-800 dark:text-white">LiteNote</span>
+        <span class="font-bold text-gray-800 dark:text-white">{{ t('app.title') }}</span>
         <div class="w-6"></div> <!-- Spacer -->
       </div>
 
@@ -52,6 +52,8 @@ import Sidebar from './Sidebar.vue';
 import Editor from './Editor.vue';
 import { Menu } from 'lucide-vue-next';
 import { useLayout } from '../composables/useLayout';
+import { useI18n } from 'vue-i18n';
 
 const { isDesktopSidebarOpen, isMobileSidebarOpen } = useLayout();
+const { t } = useI18n();
 </script>

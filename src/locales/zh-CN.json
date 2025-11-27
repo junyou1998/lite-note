@@ -1,0 +1,82 @@
+{
+    "app": {
+        "title": "LiteNote",
+        "no_notes": "暂无笔记",
+        "click_to_add": "点击上方 + 新增",
+        "welcome": "欢迎回来",
+        "setup_title": "设置密码",
+        "setup_desc": "请设置您的访问密码",
+        "unlock_desc": "请输入密码以解锁",
+        "setup_btn": "设置并进入",
+        "unlock_btn": "解锁",
+        "warning": "请务必记住您的密码，丢失将无法恢复数据。"
+    },
+    "actions": {
+        "settings": "设置",
+        "about": "关于",
+        "toggle_theme": "切换主题",
+        "add_note": "新增笔记",
+        "rename": "重命名",
+        "delete": "删除",
+        "cancel": "取消",
+        "confirm": "确认",
+        "close": "关闭",
+        "download": "下载",
+        "unlock": "解锁",
+        "enter": "进入",
+        "setup_pin": "设置 PIN 码",
+        "collapse_sidebar": "收起侧边栏",
+        "expand_sidebar": "展开侧边栏",
+        "decrease_font": "缩小字体",
+        "increase_font": "放大字体"
+    },
+    "settings": {
+        "title": "设置",
+        "change_pin": "更改密码",
+        "old_pin": "旧 PIN 码",
+        "new_pin": "新 PIN 码",
+        "confirm_new_pin": "确认新 PIN 码",
+        "placeholder_old": "输入当前的 PIN 码",
+        "placeholder_new": "输入新的 PIN 码 (至少 4 位)",
+        "placeholder_confirm": "再次输入新的 PIN 码",
+        "language": "语言",
+        "auto": "自动 (跟随系统)",
+        "general": "常规",
+        "security": "安全"
+    },
+    "messages": {
+        "fill_all": "请填写所有栏位",
+        "pin_min_length": "新 PIN 码至少需要 4 位",
+        "pin_mismatch": "新 PIN 码不一致",
+        "pin_same": "新 PIN 码不能与旧 PIN 码相同",
+        "pin_changed": "密码更改成功！",
+        "change_failed": "更改失败",
+        "encrypting": "正在加密数据...",
+        "delete_confirm": "确定要删除此笔记吗？此操作无法撤销。",
+        "pin_error": "密码错误",
+        "pin_setup_mismatch": "PIN 码不一致",
+        "pin_setup_hint": "请输入 4-6 位 PIN 码",
+        "enter_pin": "请输入 PIN 码",
+        "confirm_pin": "确认 PIN 码"
+    },
+    "about": {
+        "title": "关于 LiteNote",
+        "desc_1": "LiteNote 是一个专注于隐私与极简体验的笔记应用。",
+        "desc_2": "您的数据经过端对端加密，安全地存储在您的设备上，绝不上传云端。",
+        "sponsor": "如果您喜欢这个工具，欢迎赞助开发者一杯咖啡 ☕",
+        "made_by": "Made with ❤️ by JunYou"
+    },
+    "editor": {
+        "untitled": "无标题",
+        "words": "字数",
+        "chars": "字符",
+        "placeholder": "开始输入...",
+        "no_active_note": "没有打开的笔记",
+        "select_note_hint": "请从左侧选择或创建新笔记"
+    },
+    "theme": {
+        "light": "浅色",
+        "dark": "深色",
+        "system": "系统"
+    }
+}

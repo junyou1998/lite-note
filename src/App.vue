@@ -1,18 +1,27 @@
 <template>
-  <div class="antialiased text-gray-900 h-screen w-screen overflow-hidden font-sans">
-    <LockScreen v-if="!isUnlocked" @unlocked="isUnlocked = true" />
-    <MainLayout v-else />
+  <div :class="{ 'dark': isDark }">
+    <div class="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+      <LockScreen v-if="!isUnlocked" @unlocked="handleUnlock" />
+      <MainLayout v-else />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { useNoteStorage } from './composables/useStorage';
+import { useTheme } from './composables/useTheme';
+import { useTitle } from '@vueuse/core';
+import { useI18n } from 'vue-i18n';
 import LockScreen from './components/LockScreen.vue';
 import MainLayout from './components/MainLayout.vue';
-import { useTheme } from './composables/useTheme';
 
-// Initialize theme globally
-useTheme();
+const { isUnlocked } = useNoteStorage();
+const { isDark } = useTheme();
+const { t } = useI18n();
 
-const isUnlocked = ref(false);
+useTitle(() => t('app.title'));
+
+const handleUnlock = () => {
+  // Unlock logic handled in LockScreen
+};
 </script>
