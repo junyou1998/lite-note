@@ -1,4 +1,6 @@
-import { useStorage } from '@vueuse/core';
+import { ref, watch } from 'vue';
+import { useStorage, useDebounceFn } from '@vueuse/core';
+import { useCrypto } from './useCrypto';
 
 export interface Note {
     id: string;
@@ -7,12 +9,70 @@ export interface Note {
     updatedAt: number;
 }
 
-// Global state to ensure consistency across components
-const notes = useStorage<Note[]>('litenote_notes', []);
+// Raw storage (persisted) - can be Array (legacy) or String (encrypted)
+const rawStorage = useStorage<any>('litenote_notes', []);
+const cryptoSalt = useStorage<string>('litenote_salt', '');
 const passwordHash = useStorage<string | null>('litenote_password_hash', null);
 const lastActiveNoteId = useStorage<string | null>('litenote_last_active_id', null);
 
+// App state (in-memory, decrypted)
+const notes = ref<Note[]>([]);
+const isUnlocked = ref(false);
+let encryptionKey: CryptoKey | null = null;
+
 export function useNoteStorage() {
+    const { deriveKey, encryptData, decryptData, generateSalt } = useCrypto();
+
+    const save = async () => {
+        if (!encryptionKey || !isUnlocked.value) return;
+        try {
+            const json = JSON.stringify(notes.value);
+            const encrypted = await encryptData(json, encryptionKey);
+            rawStorage.value = encrypted;
+        } catch (e) {
+            console.error('Encryption failed:', e);
+        }
+    };
+
+    // Debounce save to avoid excessive encryption operations
+    const debouncedSave = useDebounceFn(save, 1000);
+
+    const init = async (pin: string) => {
+        if (!cryptoSalt.value) {
+            cryptoSalt.value = generateSalt();
+        }
+
+        try {
+            encryptionKey = await deriveKey(pin, cryptoSalt.value);
+
+            const raw = rawStorage.value;
+
+            if (Array.isArray(raw)) {
+                // Legacy: Plain text -> Migrate
+                console.log('Migrating legacy notes to encrypted storage...');
+                notes.value = raw;
+                await save(); // Encrypt immediately
+            } else if (typeof raw === 'string' && raw.includes(':')) {
+                // Encrypted
+                const json = await decryptData(raw, encryptionKey);
+                notes.value = JSON.parse(json);
+            } else {
+                // Empty or unknown format
+                notes.value = [];
+            }
+
+            isUnlocked.value = true;
+
+            // Setup watcher after successful init
+            watch(notes, () => {
+                debouncedSave();
+            }, { deep: true });
+
+        } catch (e) {
+            console.error('Unlock failed:', e);
+            throw new Error('密碼錯誤或資料損毀');
+        }
+    };
 
     const createNote = () => {
         const newNote: Note = {
@@ -20,7 +80,6 @@ export function useNoteStorage() {
             content: '',
             updatedAt: Date.now(),
         };
-        // Add to the beginning of the list
         notes.value.unshift(newNote);
         lastActiveNoteId.value = newNote.id;
         return newNote;
@@ -31,7 +90,6 @@ export function useNoteStorage() {
         if (index !== -1) {
             notes.value.splice(index, 1);
             if (lastActiveNoteId.value === id) {
-                // If we deleted the active note, try to select the next one or previous one, or null
                 lastActiveNoteId.value = notes.value[0]?.id || null;
             }
         }
@@ -42,8 +100,6 @@ export function useNoteStorage() {
         if (note) {
             note.content = content;
             note.updatedAt = Date.now();
-            // Optional: Move to top on edit? 
-            // For now, let's keep the order but we might want to sort by updatedAt in the UI.
         }
     };
 
@@ -61,6 +117,8 @@ export function useNoteStorage() {
         notes,
         passwordHash,
         lastActiveNoteId,
+        isUnlocked,
+        init,
         createNote,
         deleteNote,
         updateNote,

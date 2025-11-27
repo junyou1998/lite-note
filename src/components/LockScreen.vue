@@ -27,7 +27,7 @@
       </div>
 
       <div class="relative mb-8">
-        <input v-model="pin" type="password"
+        <input v-model="pin" type="password" inputmode="numeric" pattern="[0-9]*"
           class="w-full text-center text-4xl tracking-[0.5em] bg-transparent border-b-2 border-gray-200 dark:border-gray-700 focus:border-black dark:focus:border-white outline-none py-2 text-gray-900 dark:text-white transition-colors font-mono"
           placeholder="••••" @keyup.enter="submit" autofocus />
       </div>
@@ -47,36 +47,59 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useNoteStorage } from '../composables/useStorage';
+import { ref, onMounted } from 'vue';
 import { useCrypto } from '../composables/useCrypto';
+import { useStorage } from '@vueuse/core';
+import { useNoteStorage } from '../composables/useStorage';
 import { Lock } from 'lucide-vue-next';
 
 const emit = defineEmits(['unlocked']);
 
-const { passwordHash } = useNoteStorage();
 const { hashPassword } = useCrypto();
-
+const { init } = useNoteStorage();
+const storedHash = useStorage<string | null>('litenote_password_hash', null);
 const pin = ref('');
 const error = ref('');
+const isSetup = ref(false);
+const isLoading = ref(false);
 
-const isSetup = computed(() => !passwordHash.value);
+onMounted(() => {
+  if (!storedHash.value) {
+    isSetup.value = true;
+  }
+});
 
-async function submit() {
-  if (!pin.value) return;
+const submit = async () => {
+  if (pin.value.length < 4) {
+    error.value = 'PIN 碼至少需要 4 碼';
+    return;
+  }
 
-  const hash = await hashPassword(pin.value);
+  isLoading.value = true;
+  error.value = '';
 
-  if (isSetup.value) {
-    passwordHash.value = hash;
-    emit('unlocked');
-  } else {
-    if (hash === passwordHash.value) {
+  try {
+    if (isSetup.value) {
+      // Setup new PIN
+      const hash = await hashPassword(pin.value);
+      storedHash.value = hash;
+      await init(pin.value);
       emit('unlocked');
     } else {
-      error.value = '密碼錯誤';
-      pin.value = '';
+      // Unlock
+      const hash = await hashPassword(pin.value);
+      if (hash === storedHash.value) {
+        await init(pin.value);
+        emit('unlocked');
+      } else {
+        error.value = '密碼錯誤';
+        pin.value = '';
+      }
     }
+  } catch (e: any) {
+    error.value = e.message || '發生錯誤';
+  } finally {
+    isLoading.value = false;
   }
-}
+};
 </script>

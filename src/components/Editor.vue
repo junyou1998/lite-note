@@ -1,33 +1,45 @@
 <template>
   <div class="h-full flex flex-col bg-white dark:bg-black relative group transition-colors duration-300">
-    <!-- Toolbar (Top right) -->
+    <!-- Toolbar (Static Header) -->
     <div
-      class="absolute top-4 right-4 flex items-center gap-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-      <div class="flex items-center gap-2 border-r border-gray-200 dark:border-gray-800 pr-4 mr-4">
-        <button @click="decreaseFontSize"
-          class="p-1 text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-          title="縮小字體">
-          <Minus class="w-4 h-4" />
-        </button>
-        <span class="text-xs text-gray-500 font-mono w-8 text-center">{{ fontSize }}px</span>
-        <button @click="increaseFontSize"
-          class="p-1 text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-          title="放大字體">
-          <Plus class="w-4 h-4" />
+      class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black z-10">
+      <!-- Left: Sidebar Toggle -->
+      <div class="flex items-center">
+        <button @click="toggleDesktopSidebar"
+          class="hidden md:flex p-2 -ml-2 text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+          :title="isDesktopSidebarOpen ? '收合側邊欄' : '展開側邊欄'">
+          <PanelLeft class="w-5 h-5" />
         </button>
       </div>
-      <div class="text-xs text-gray-400 dark:text-gray-500 font-mono">
-        {{ charCount }} 字元
+
+      <!-- Right: Tools -->
+      <div class="flex items-center">
+        <div class="flex items-center gap-2 border-r border-gray-200 dark:border-gray-800 pr-4 mr-4">
+          <button @click="decreaseFontSize"
+            class="p-1 text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+            title="縮小字體">
+            <Minus class="w-4 h-4" />
+          </button>
+          <span class="text-xs text-gray-500 font-mono w-8 text-center">{{ fontSize }}px</span>
+          <button @click="increaseFontSize"
+            class="p-1 text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+            title="放大字體">
+            <Plus class="w-4 h-4" />
+          </button>
+        </div>
+        <div class="text-xs text-gray-400 dark:text-gray-500 font-mono mr-4">
+          {{ charCount }} 字元
+        </div>
+        <button @click="downloadTxt"
+          class="p-2 text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+          title="下載 TXT">
+          <Download class="w-5 h-5" />
+        </button>
       </div>
-      <button @click="downloadTxt"
-        class="p-2 text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-        title="下載 TXT">
-        <Download class="w-5 h-5" />
-      </button>
     </div>
 
     <textarea v-if="currentNote" ref="textareaRef" v-model="content"
-      class="flex-1 w-full h-full p-8 resize-none outline-none text-gray-800 dark:text-gray-200 bg-transparent leading-relaxed font-sans placeholder-gray-300 dark:placeholder-gray-700"
+      class="flex-1 w-full h-full p-6 resize-none outline-none text-gray-800 dark:text-gray-200 bg-transparent leading-relaxed font-sans placeholder-gray-300 dark:placeholder-gray-700"
       :style="{ fontSize: `${fontSize}px` }" placeholder="開始輸入..." spellcheck="false"></textarea>
 
     <div v-else class="flex-1 flex flex-col items-center justify-center text-gray-300 dark:text-gray-700 select-none">
@@ -41,9 +53,11 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import { useStorage } from '@vueuse/core';
 import { useNoteStorage } from '../composables/useStorage';
-import { Download, Plus, Minus } from 'lucide-vue-next';
+import { useLayout } from '../composables/useLayout';
+import { Download, Plus, Minus, PanelLeft } from 'lucide-vue-next';
 
 const { lastActiveNoteId, getNote, updateNote } = useNoteStorage();
+const { toggleDesktopSidebar, isDesktopSidebarOpen } = useLayout();
 
 const currentNote = computed(() => {
   if (!lastActiveNoteId.value) return null;

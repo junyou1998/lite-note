@@ -1,6 +1,9 @@
 <template>
   <div
     class="h-full flex flex-col bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 w-full sm:w-64 transition-colors duration-300">
+    <!-- Mobile Menu Overlay -->
+    <div v-if="mobileMenuId" class="fixed inset-0 z-30 bg-transparent" @click.stop="mobileMenuId = null"></div>
+
     <!-- Header -->
     <div
       class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-white dark:bg-gray-900/50 sm:bg-transparent backdrop-blur-sm">
@@ -26,14 +29,17 @@
       <div v-if="notes.length === 0" class="p-8 text-gray-400 dark:text-gray-600 text-center text-sm">
         尚無記事<br>點擊上方 + 新增
       </div>
-      <div v-for="note in sortedNotes" :key="note.id" @click="selectNote(note.id)"
+      <div v-for="note in sortedNotes" :key="note.id" @click="handleNoteClick(note)"
+        @touchstart="handleTouchStart(note)" @touchmove="handleTouchMove" @touchend="handleTouchEnd"
         class="p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors group relative select-none"
-        :class="{ 'bg-white dark:bg-gray-800 border-l-4 border-l-black dark:border-l-white shadow-sm': lastActiveNoteId === note.id }"
-        @dblclick="startRenaming(note)">
-        <div v-if="renamingId === note.id" class="mr-6">
+        :class="{
+          'bg-white dark:bg-gray-800 border-l-4 border-l-black dark:border-l-white shadow-sm': lastActiveNoteId === note.id,
+          'z-40': mobileMenuId === note.id
+        }" @dblclick="startRenaming(note)">
+        <div v-if="renamingId === note.id" class="mr-2">
           <input ref="renameInput" v-model="renameValue" @blur="finishRenaming" @keyup.enter="finishRenaming"
             @click.stop
-            class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-black dark:focus:border-white" />
+            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-sm text-gray-900 dark:text-white outline-none focus:border-gray-400 dark:focus:border-gray-500 focus:bg-white dark:focus:bg-gray-700 transition-all" />
         </div>
         <template v-else>
           <h3 class="font-medium text-gray-800 dark:text-gray-200 truncate pr-6 text-sm">
@@ -44,18 +50,43 @@
           </p>
         </template>
 
-        <div
-          class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button @click.stop="startRenaming(note)"
-            class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
-            title="重新命名">
-            <Edit2 class="w-3.5 h-3.5" />
-          </button>
-          <button @click.stop="confirmDelete(note)"
-            class="p-1.5 text-gray-400 hover:text-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
-            title="刪除">
-            <Trash2 class="w-3.5 h-3.5" />
-          </button>
+        <div v-if="renamingId !== note.id" class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          <!-- Desktop Hover Actions -->
+          <div class="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button @click.stop="startRenaming(note)"
+              class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+              title="重新命名">
+              <Edit2 class="w-3.5 h-3.5" />
+            </button>
+            <button @click.stop="confirmDelete(note)"
+              class="p-1.5 text-gray-400 hover:text-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
+              title="刪除">
+              <Trash2 class="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <!-- Mobile More Button -->
+          <div class="sm:hidden relative">
+            <button @click.stop="toggleMobileMenu(note.id)"
+              class="p-2 text-gray-400 active:text-gray-600 dark:active:text-gray-300 rounded-md active:bg-gray-200 dark:active:bg-gray-700">
+              <MoreVertical class="w-4 h-4" />
+            </button>
+
+            <!-- Mobile Menu Dropdown -->
+            <div v-if="mobileMenuId === note.id"
+              class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 z-10 py-1 overflow-hidden">
+              <button @click.stop="startRenaming(note); mobileMenuId = null"
+                class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
+                <Edit2 class="w-3.5 h-3.5" />
+                重新命名
+              </button>
+              <button @click.stop="confirmDelete(note); mobileMenuId = null"
+                class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
+                <Trash2 class="w-3.5 h-3.5" />
+                刪除
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -72,13 +103,54 @@
 import { computed, ref, nextTick } from 'vue';
 import { useNoteStorage, type Note } from '../composables/useStorage';
 import { useTheme } from '../composables/useTheme';
-import { Plus, Trash2, Edit2, Sun, Moon, Monitor } from 'lucide-vue-next';
+import { Plus, Trash2, Edit2, Sun, Moon, Monitor, MoreVertical } from 'lucide-vue-next';
 import Modal from './Modal.vue';
 
 const emit = defineEmits(['close-sidebar']);
 
 const { notes, lastActiveNoteId, createNote, deleteNote, updateNoteTitle } = useNoteStorage();
 const { theme, toggleTheme, themeLabel } = useTheme();
+
+// Mobile Menu Logic
+const mobileMenuId = ref<string | null>(null);
+
+function toggleMobileMenu(id: string) {
+  if (mobileMenuId.value === id) {
+    mobileMenuId.value = null;
+  } else {
+    mobileMenuId.value = id;
+  }
+}
+
+// Long Press Logic
+const longPressTimer = ref<any>(null);
+const isLongPress = ref(false);
+
+function handleTouchStart(note: Note) {
+  isLongPress.value = false;
+  longPressTimer.value = setTimeout(() => {
+    isLongPress.value = true;
+    // Vibrate if supported
+    if (navigator.vibrate) navigator.vibrate(50);
+    startRenaming(note);
+  }, 500);
+}
+
+function handleTouchMove() {
+  clearTimeout(longPressTimer.value);
+}
+
+function handleTouchEnd() {
+  clearTimeout(longPressTimer.value);
+}
+
+function handleNoteClick(note: Note) {
+  if (isLongPress.value) {
+    isLongPress.value = false;
+    return;
+  }
+  selectNote(note.id);
+}
 
 // Delete Logic
 const showDeleteModal = ref(false);
@@ -132,6 +204,9 @@ const sortedNotes = computed(() => {
 });
 
 function selectNote(id: string) {
+  if (mobileMenuId.value) {
+    mobileMenuId.value = null;
+  }
   lastActiveNoteId.value = id;
   emit('close-sidebar');
 }
