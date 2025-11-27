@@ -9,6 +9,11 @@
       class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-white dark:bg-gray-900/50 sm:bg-transparent backdrop-blur-sm">
       <h1 class="font-bold text-lg tracking-tight text-gray-900 dark:text-white">LiteNote</h1>
       <div class="flex items-center gap-1">
+        <button @click="showAboutModal = true"
+          class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
+          title="關於">
+          <Info class="w-5 h-5" />
+        </button>
         <button @click="openSettings"
           class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
           title="設定">
@@ -130,6 +135,40 @@
         <div v-if="isChangingPin" class="text-gray-500 text-sm">正在加密資料...</div>
       </div>
     </Modal>
+
+    <!-- About Modal -->
+    <Modal :is-open="showAboutModal" title="關於 LiteNote" :show-cancel="false" confirm-text="關閉"
+      @close="showAboutModal = false" @confirm="showAboutModal = false">
+      <div class="space-y-6 text-center">
+        <div class="space-y-2">
+          <p class="text-gray-600 dark:text-gray-300">
+            LiteNote 是一個專注於隱私與極簡體驗的筆記應用。
+          </p>
+          <p class="text-gray-600 dark:text-gray-300 text-sm">
+            您的資料經過端對端加密，安全地儲存在您的裝置上，絕不上傳雲端。
+          </p>
+        </div>
+
+        <div class="pt-2 border-t border-gray-100 dark:border-gray-800">
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            如果您喜歡這個工具，歡迎贊助開發者一杯咖啡 ☕
+          </p>
+          <a href="https://www.buymeacoffee.com/junyou" target="_blank" rel="noopener noreferrer"
+            class="inline-block hover:opacity-90 transition-opacity">
+            <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee"
+              style="height: 50px !important; width: 180px !important;">
+          </a>
+        </div>
+
+        <div class="text-xs text-gray-400 dark:text-gray-500">
+          v{{ version }} |
+          <a href="https://github.com/junyou1998/lite-note" target="_blank" rel="noopener noreferrer"
+            class="hover:text-gray-600 dark:hover:text-gray-300 transition-colors border-b border-transparent hover:border-gray-400">
+            Made with ❤️ by JunYou
+          </a>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -137,13 +176,17 @@
 import { computed, ref, nextTick } from 'vue';
 import { useNoteStorage, type Note } from '../composables/useStorage';
 import { useTheme } from '../composables/useTheme';
-import { Plus, Trash2, Edit2, Sun, Moon, Monitor, MoreVertical, Settings } from 'lucide-vue-next';
+import { Plus, Trash2, Edit2, Sun, Moon, Monitor, MoreVertical, Settings, Info } from 'lucide-vue-next';
 import Modal from './Modal.vue';
+import { version } from '../../package.json';
 
 const emit = defineEmits(['close-sidebar']);
 
 const { notes, lastActiveNoteId, createNote, deleteNote, updateNoteTitle, changePin } = useNoteStorage();
 const { theme, toggleTheme, themeLabel } = useTheme();
+
+// About Logic
+const showAboutModal = ref(false);
 
 // Mobile Menu Logic
 const mobileMenuId = ref<string | null>(null);
