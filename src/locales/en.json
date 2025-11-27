@@ -5,11 +5,17 @@
         "click_to_add": "Click + to add",
         "welcome": "Welcome Back",
         "setup_title": "Setup Password",
-        "setup_desc": "Please set your access PIN",
+        "setup_desc": "Set your PIN (numbers only) to protect your notes",
         "unlock_desc": "Enter PIN to unlock",
         "setup_btn": "Setup & Enter",
         "unlock_btn": "Unlock",
-        "warning": "Please remember your PIN. Data cannot be recovered if lost."
+        "warning": "Please remember your PIN. Data cannot be recovered if lost.",
+        "reset_btn": "Reset App",
+        "reset_warning_title": "Reset Application?",
+        "reset_warning_desc": "This will delete ALL your notes permanently. This action cannot be undone.",
+        "reset_confirm_instruction": "Type '{0}' to confirm.",
+        "reset_confirm_keyword": "DELETE",
+        "reset_confirm_btn": "Reset Everything"
     },
     "actions": {
         "settings": "Settings",
@@ -46,7 +52,8 @@
     },
     "messages": {
         "fill_all": "Please fill all fields",
-        "pin_min_length": "New PIN must be at least 4 digits",
+        "pin_min_length": "PIN must be at least 4 digits",
+        "pin_numeric_only": "PIN must contain only numbers",
         "pin_mismatch": "PINs do not match",
         "pin_same": "New PIN cannot be the same as old PIN",
         "pin_changed": "Password changed successfully!",

@@ -5,11 +5,17 @@
         "click_to_add": "点击上方 + 新增",
         "welcome": "欢迎回来",
         "setup_title": "设置密码",
-        "setup_desc": "请设置您的访问密码",
+        "setup_desc": "请设置您的 PIN 码 (仅限数字) 以保护您的笔记",
         "unlock_desc": "请输入密码以解锁",
         "setup_btn": "设置并进入",
         "unlock_btn": "解锁",
-        "warning": "请务必记住您的密码，丢失将无法恢复数据。"
+        "warning": "请务必记住您的密码，丢失将无法恢复数据。",
+        "reset_btn": "重置应用程序",
+        "reset_warning_title": "重置应用程序？",
+        "reset_warning_desc": "这将永久删除所有笔记。此操作无法恢复。",
+        "reset_confirm_instruction": "请输入“{0}”以确认。",
+        "reset_confirm_keyword": "删除",
+        "reset_confirm_btn": "重置所有数据"
     },
     "actions": {
         "settings": "设置",
@@ -46,8 +52,9 @@
     },
     "messages": {
         "fill_all": "请填写所有栏位",
-        "pin_min_length": "新 PIN 码至少需要 4 位",
-        "pin_mismatch": "新 PIN 码不一致",
+        "pin_min_length": "PIN 码至少需要 4 位",
+        "pin_numeric_only": "PIN 码仅限输入数字",
+        "pin_mismatch": "两次输入的 PIN 码不符",
         "pin_same": "新 PIN 码不能与旧 PIN 码相同",
         "pin_changed": "密码更改成功！",
         "change_failed": "更改失败",

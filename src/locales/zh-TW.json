@@ -5,11 +5,17 @@
         "click_to_add": "點擊上方 + 新增",
         "welcome": "歡迎回來",
         "setup_title": "設定密碼",
-        "setup_desc": "請設定您的存取密碼",
+        "setup_desc": "請設定您的 PIN 碼 (僅限數字) 以保護您的筆記",
         "unlock_desc": "請輸入密碼以解鎖",
         "setup_btn": "設定並進入",
         "unlock_btn": "解鎖",
-        "warning": "請務必記住您的密碼，遺失將無法復原資料。"
+        "warning": "請務必記住您的密碼，遺失將無法復原資料。",
+        "reset_btn": "重置應用程式",
+        "reset_warning_title": "重置應用程式？",
+        "reset_warning_desc": "這將永久刪除所有筆記。此動作無法復原。",
+        "reset_confirm_instruction": "請輸入「{0}」以確認。",
+        "reset_confirm_keyword": "刪除",
+        "reset_confirm_btn": "重置所有資料"
     },
     "actions": {
         "settings": "設定",
@@ -46,8 +52,9 @@
     },
     "messages": {
         "fill_all": "請填寫所有欄位",
-        "pin_min_length": "新 PIN 碼至少需要 4 碼",
-        "pin_mismatch": "新 PIN 碼不一致",
+        "pin_min_length": "PIN 碼至少需要 4 碼",
+        "pin_numeric_only": "PIN 碼僅限輸入數字",
+        "pin_mismatch": "兩次輸入的 PIN 碼不符",
         "pin_same": "新 PIN 碼不能與舊 PIN 碼相同",
         "pin_changed": "密碼變更成功！",
         "change_failed": "變更失敗",

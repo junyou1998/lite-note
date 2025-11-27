@@ -28,7 +28,7 @@
 
       <form @submit.prevent="submit">
         <div class="relative mb-8">
-          <input v-model="pin" type="password" inputmode="numeric" pattern="[0-9]*"
+          <input v-model="pin" type="password" inputmode="numeric" :maxlength="isSetup ? 6 : undefined"
             class="w-full text-center text-4xl tracking-[0.5em] bg-transparent border-b-2 border-gray-200 dark:border-gray-700 focus:border-black dark:focus:border-white outline-none py-2 text-gray-900 dark:text-white transition-colors font-mono"
             placeholder="••••" autofocus autocomplete="current-password" />
         </div>
@@ -41,10 +41,36 @@
 
       <p v-if="error" class="text-red-500 mt-4 text-sm font-medium animate-pulse">{{ error }}</p>
 
+      <!-- Reset App Button (Visible after 3 failed attempts) -->
+      <div v-if="failedAttempts >= 3" class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
+        <button @click="showResetModal = true"
+          class="text-xs text-gray-400 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-400 transition-colors underline decoration-dotted">
+          {{ t('app.reset_btn') }}
+        </button>
+      </div>
+
       <p v-if="isSetup" class="text-gray-400 dark:text-gray-600 mt-6 text-xs">
         {{ t('app.warning') }}
       </p>
     </div>
+
+    <!-- Reset Confirmation Modal -->
+    <Modal :is-open="showResetModal" :title="t('app.reset_warning_title')" :is-destructive="true"
+      :confirm-text="t('app.reset_confirm_btn')" @close="showResetModal = false" @confirm="handleReset">
+      <div class="space-y-4">
+        <p class="text-red-600 dark:text-red-400 font-medium">
+          {{ t('app.reset_warning_desc') }}
+        </p>
+        <div>
+          <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">
+            {{ t('app.reset_confirm_instruction', [t('app.reset_confirm_keyword')]) }}
+          </label>
+          <input v-model="resetConfirmInput" type="text"
+            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 outline-none"
+            :placeholder="t('app.reset_confirm_keyword')" />
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -55,6 +81,7 @@ import { useStorage } from '@vueuse/core';
 import { useNoteStorage } from '../composables/useStorage';
 import { Lock } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
+import Modal from './Modal.vue';
 
 const emit = defineEmits(['unlocked']);
 
@@ -67,6 +94,11 @@ const error = ref('');
 const isSetup = ref(false);
 const isLoading = ref(false);
 
+// Reset Logic
+const failedAttempts = ref(0);
+const showResetModal = ref(false);
+const resetConfirmInput = ref('');
+
 onMounted(() => {
   if (!storedHash.value) {
     isSetup.value = true;
@@ -74,6 +106,12 @@ onMounted(() => {
 });
 
 const submit = async () => {
+  // Validate numeric only
+  if (!/^\d+$/.test(pin.value)) {
+    error.value = t('messages.pin_numeric_only');
+    return;
+  }
+
   if (pin.value.length < 4) {
     error.value = t('messages.pin_min_length');
     return;
@@ -98,12 +136,20 @@ const submit = async () => {
       } else {
         error.value = t('messages.pin_error');
         pin.value = '';
+        failedAttempts.value++;
       }
     }
   } catch (e: any) {
     error.value = e.message || t('messages.change_failed');
   } finally {
     isLoading.value = false;
+  }
+};
+
+const handleReset = () => {
+  if (resetConfirmInput.value === t('app.reset_confirm_keyword')) {
+    localStorage.clear();
+    location.reload();
   }
 };
 </script>

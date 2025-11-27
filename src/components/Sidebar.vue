@@ -127,7 +127,7 @@
         <div v-if="activeTab === 'general'" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.language')
-              }}</label>
+            }}</label>
             <select :value="locale" @change="e => setLocale((e.target as HTMLSelectElement).value)"
               class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none">
               <option value="auto">{{ t('settings.auto') }}</option>
@@ -143,22 +143,22 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.old_pin')
             }}</label>
-            <input v-model="oldPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+            <input v-model="oldPin" type="password" inputmode="numeric"
               class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
               :placeholder="t('settings.placeholder_old')" autocomplete="current-password" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.new_pin')
             }}</label>
-            <input v-model="newPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+            <input v-model="newPin" type="password" inputmode="numeric" maxlength="6"
               class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
               :placeholder="t('settings.placeholder_new')" autocomplete="new-password" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
               t('settings.confirm_new_pin')
-            }}</label>
-            <input v-model="confirmNewPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+              }}</label>
+            <input v-model="confirmNewPin" type="password" inputmode="numeric" maxlength="6"
               class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
               :placeholder="t('settings.placeholder_confirm')" autocomplete="new-password" />
           </div>
@@ -277,6 +277,12 @@ async function handleChangePin() {
 
   if (!oldPin.value || !newPin.value || !confirmNewPin.value) {
     settingsError.value = t('messages.fill_all');
+    return;
+  }
+
+  // Validate numeric only
+  if (!/^\d+$/.test(newPin.value) || !/^\d+$/.test(oldPin.value)) {
+    settingsError.value = t('messages.pin_numeric_only');
     return;
   }
 
