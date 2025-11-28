@@ -15,7 +15,9 @@
         "reset_warning_desc": "This will delete ALL your notes permanently. This action cannot be undone.",
         "reset_confirm_instruction": "Type '{0}' to confirm.",
         "reset_confirm_keyword": "DELETE",
-        "reset_confirm_btn": "Reset Everything"
+        "reset_confirm_btn": "Reset Everything",
+        "date_created_suffix": "Created",
+        "date_updated_suffix": "Updated"
     },
     "actions": {
         "settings": "Settings",
@@ -34,7 +36,9 @@
         "collapse_sidebar": "Collapse Sidebar",
         "expand_sidebar": "Expand Sidebar",
         "decrease_font": "Decrease Font Size",
-        "increase_font": "Increase Font Size"
+        "increase_font": "Increase Font Size",
+        "pin": "Pin",
+        "unpin": "Unpin"
     },
     "settings": {
         "title": "Settings",
@@ -55,7 +59,10 @@
         "dismiss_btn": "Not Now",
         "install_manual_desc": "Due to browser restrictions, please follow these steps to install manually:",
         "install_chrome_desc": "Click the 'Install' icon in the address bar, or 'Install LiteNote' in the menu.",
-        "install_safari_desc": "Tap the 'Share' button below, then select 'Add to Home Screen'."
+        "install_safari_desc": "Tap the 'Share' button below, then select 'Add to Home Screen'.",
+        "sort_by": "Sort by",
+        "sort_updated": "Last Updated",
+        "sort_created": "Date Created"
     },
     "messages": {
         "fill_all": "Please fill all fields",

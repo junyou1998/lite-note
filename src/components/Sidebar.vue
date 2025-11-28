@@ -9,29 +9,25 @@
       class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-white dark:bg-gray-900/50 sm:bg-transparent backdrop-blur-sm">
       <h1 class="font-bold text-lg tracking-tight text-gray-900 dark:text-white">{{ t('app.title') }}</h1>
       <div class="flex items-center gap-1">
-        <button @click="showAboutModal = true"
-          class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
-          :title="t('actions.about')">
-          <Info class="w-5 h-5" />
-        </button>
-        <button @click="openSettings"
-          class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
-          :title="t('actions.settings')">
-          <Settings class="w-5 h-5" />
-        </button>
-        <button @click="toggleTheme"
-          class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
-          :title="`${t('actions.toggle_theme')} (${t('theme.' + theme)})`">
-          <Sun v-if="theme === 'light'" class="w-5 h-5" />
-          <Moon v-else-if="theme === 'dark'" class="w-5 h-5" />
-          <Monitor v-else class="w-5 h-5" />
-        </button>
         <button @click="handleCreate"
           class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-900 dark:text-white"
           :title="t('actions.add_note')">
           <Plus class="w-5 h-5" />
         </button>
       </div>
+    </div>
+
+    <!-- Sort Control -->
+    <div
+      class="px-4 py-2 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-900/30">
+      <span class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{
+        t('settings.sort_by')
+      }}</span>
+      <button @click="toggleSort"
+        class="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-800">
+        {{ sortOption === 'created' ? t('settings.sort_created') : t('settings.sort_updated') }}
+        <ArrowUpDown class="w-3 h-3" />
+      </button>
     </div>
 
     <!-- Note List -->
@@ -41,7 +37,7 @@
       </div>
       <div v-for="note in sortedNotes" :key="note.id" @click="handleNoteClick(note)"
         @touchstart="handleTouchStart(note)" @touchmove="handleTouchMove" @touchend="handleTouchEnd"
-        class="p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors group relative select-none"
+        class="p-4 border-b border-gray-100 dark:border-gray-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group relative select-none"
         :class="{
           'bg-white dark:bg-gray-800 border-l-4 border-l-black dark:border-l-white shadow-sm': lastActiveNoteId === note.id,
           'z-40': mobileMenuId === note.id
@@ -52,21 +48,32 @@
             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-sm text-gray-900 dark:text-white outline-none focus:border-gray-400 dark:focus:border-gray-500 focus:bg-white dark:focus:bg-gray-700 transition-all" />
         </div>
         <template v-else>
-          <h3 class="font-medium text-gray-800 dark:text-gray-200 truncate pr-6 text-sm">
+          <h3 class="font-medium text-gray-800 dark:text-gray-200 truncate pr-2 text-sm">
             {{ note.title || getTitle(note.content) }}
           </h3>
-          <p class="text-xs text-gray-500 dark:text-gray-500 mt-1 font-mono">
-            {{ formatDate(note.updatedAt) }}
-          </p>
+          <div class="flex items-center text-xs text-gray-500 dark:text-gray-500 mt-1 font-mono">
+            <span>{{ formatDate(sortOption === 'created' ? (note.createdAt || note.updatedAt) : note.updatedAt)
+              }}</span>
+            <span class="ml-1 opacity-75 scale-90 inline-block origin-left">{{ sortOption === 'created' ?
+              t('app.date_created_suffix') : t('app.date_updated_suffix') }}</span>
+            <Pin v-if="note.isPinned" class="w-3 h-3 ml-2 text-blue-500 dark:text-blue-400" />
+          </div>
         </template>
 
         <div v-if="renamingId !== note.id" class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           <!-- Desktop Hover Actions -->
-          <div class="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div
+            class="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-100 dark:bg-gray-800 pl-2 shadow-[-10px_0_10px_-5px_rgba(243,244,246,1)] dark:shadow-[-10px_0_10px_-5px_rgba(31,41,55,1)] rounded-l-md">
             <button @click.stop="startRenaming(note)"
               class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
               :title="t('actions.rename')">
               <Edit2 class="w-3.5 h-3.5" />
+            </button>
+            <button @click.stop="togglePin(note.id)"
+              class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+              :title="note.isPinned ? t('actions.unpin') : t('actions.pin')">
+              <PinOff v-if="note.isPinned" class="w-3.5 h-3.5" />
+              <Pin v-else class="w-3.5 h-3.5" />
             </button>
             <button @click.stop="confirmDelete(note)"
               class="p-1.5 text-gray-400 hover:text-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
@@ -89,6 +96,11 @@
                 class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
                 <Edit2 class="w-3.5 h-3.5" />
                 {{ t('actions.rename') }}
+              </button>
+              <button @click.stop="togglePin(note.id); mobileMenuId = null"
+                class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
+                <component :is="note.isPinned ? PinOff : Pin" class="w-3.5 h-3.5" />
+                {{ note.isPinned ? t('actions.unpin') : t('actions.pin') }}
               </button>
               <button @click.stop="confirmDelete(note); mobileMenuId = null"
                 class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
@@ -130,6 +142,12 @@
             }}</label>
             <Dropdown :model-value="locale" @update:model-value="setLocale" :options="languageOptions" />
 
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.sort_by')
+              }}</label>
+            <Dropdown :model-value="sortOption" @update:model-value="sortOption = $event" :options="sortOptions" />
           </div>
 
           <!-- PWA Install Button (Always visible) -->
@@ -236,6 +254,30 @@
         </div>
       </div>
     </div>
+
+    <!-- Footer Actions -->
+    <div
+      class="p-3 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center bg-white dark:bg-gray-900/50">
+      <div class="flex items-center gap-1">
+        <button @click="openSettings"
+          class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-500 dark:text-gray-400"
+          :title="t('actions.settings')">
+          <Settings class="w-5 h-5" />
+        </button>
+        <button @click="showAboutModal = true"
+          class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-500 dark:text-gray-400"
+          :title="t('actions.about')">
+          <Info class="w-5 h-5" />
+        </button>
+      </div>
+      <button @click="toggleTheme"
+        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-500 dark:text-gray-400"
+        :title="`${t('actions.toggle_theme')} (${t('theme.' + theme)})`">
+        <Sun v-if="theme === 'light'" class="w-5 h-5" />
+        <Moon v-else-if="theme === 'dark'" class="w-5 h-5" />
+        <Monitor v-else class="w-5 h-5" />
+      </button>
+    </div>
     <!-- Install Help Modal -->
     <Modal :is-open="showInstallHelp" :title="t('settings.install_app')" :confirm-text="t('actions.close')"
       :show-cancel="false" @close="showInstallHelp = false" @confirm="showInstallHelp = false">
@@ -271,7 +313,7 @@ import { computed, ref, nextTick } from 'vue';
 import { useNoteStorage, type Note } from '../composables/useStorage';
 import { useTheme } from '../composables/useTheme';
 import { usePWA } from '../composables/usePWA';
-import { Plus, Trash2, Edit2, Sun, Moon, Monitor, MoreVertical, Settings, Info, Download, X } from 'lucide-vue-next';
+import { Plus, Trash2, Edit2, Sun, Moon, Monitor, MoreVertical, Settings, Info, Download, X, Pin, PinOff, ArrowUpDown } from 'lucide-vue-next';
 import Modal from './Modal.vue';
 import Dropdown from './Dropdown.vue';
 import { version } from '../../package.json';
@@ -280,7 +322,7 @@ import { setLocale, locale } from '../i18n';
 
 const emit = defineEmits(['close-sidebar']);
 
-const { notes, lastActiveNoteId, createNote, deleteNote, updateNoteTitle, changePin } = useNoteStorage();
+const { notes, lastActiveNoteId, createNote, deleteNote, updateNoteTitle, changePin, togglePin, sortOption } = useNoteStorage();
 const { theme, toggleTheme } = useTheme();
 const { t } = useI18n();
 const { canInstall, isDismissed, install, dismiss } = usePWA();
@@ -308,6 +350,10 @@ function toggleMobileMenu(id: string) {
   }
 }
 
+function toggleSort() {
+  sortOption.value = sortOption.value === 'updated' ? 'created' : 'updated';
+}
+
 // Settings Logic
 const showSettingsModal = ref(false);
 const activeTab = ref<'general' | 'security'>('general');
@@ -323,6 +369,11 @@ const languageOptions = computed(() => [
   { label: '繁體中文', value: 'zh-TW' },
   { label: '简体中文', value: 'zh-CN' },
   { label: 'English', value: 'en' }
+]);
+
+const sortOptions = computed(() => [
+  { label: t('settings.sort_updated'), value: 'updated' },
+  { label: t('settings.sort_created'), value: 'created' }
 ]);
 
 const settingsConfirmText = computed(() => {
@@ -466,13 +517,24 @@ function finishRenaming() {
     // Let's save as string, but if it matches the auto-generated title, maybe we can keep it?
     // User asked for "Rename", so we save what they typed.
     updateNoteTitle(renamingId.value, renameValue.value);
+    selectNote(renamingId.value);
     renamingId.value = null;
   }
 }
 
 // General
 const sortedNotes = computed(() => {
-  return [...notes.value].sort((a, b) => b.updatedAt - a.updatedAt);
+  return [...notes.value].sort((a, b) => {
+    if (a.isPinned !== b.isPinned) {
+      return a.isPinned ? -1 : 1;
+    }
+    if (sortOption.value === 'created') {
+      const dateA = a.createdAt || a.updatedAt;
+      const dateB = b.createdAt || b.updatedAt;
+      return dateB - dateA;
+    }
+    return b.updatedAt - a.updatedAt;
+  });
 });
 
 function selectNote(id: string) {

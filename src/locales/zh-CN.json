@@ -15,7 +15,9 @@
         "reset_warning_desc": "这将永久删除所有笔记。此操作无法恢复。",
         "reset_confirm_instruction": "请输入“{0}”以确认。",
         "reset_confirm_keyword": "删除",
-        "reset_confirm_btn": "重置所有数据"
+        "reset_confirm_btn": "重置所有数据",
+        "date_created_suffix": "创建",
+        "date_updated_suffix": "修改"
     },
     "actions": {
         "settings": "设置",
@@ -34,7 +36,9 @@
         "collapse_sidebar": "收起侧边栏",
         "expand_sidebar": "展开侧边栏",
         "decrease_font": "缩小字体",
-        "increase_font": "放大字体"
+        "increase_font": "放大字体",
+        "pin": "置顶",
+        "unpin": "取消置顶"
     },
     "settings": {
         "title": "设置",
@@ -55,7 +59,10 @@
         "dismiss_btn": "暂不安装",
         "install_manual_desc": "由于浏览器限制，请按照以下步骤手动安装：",
         "install_chrome_desc": "点击浏览器地址栏右侧的“安装”图标，或菜单中的“安装 LiteNote”。",
-        "install_safari_desc": "点击下方的“分享”按钮，然后选择“添加到主屏幕”。"
+        "install_safari_desc": "点击下方的“分享”按钮，然后选择“添加到主屏幕”。",
+        "sort_by": "排序方式",
+        "sort_updated": "编辑时间",
+        "sort_created": "创建时间"
     },
     "messages": {
         "fill_all": "请填写所有栏位",

@@ -15,7 +15,9 @@
         "reset_warning_desc": "這將永久刪除所有筆記。此動作無法復原。",
         "reset_confirm_instruction": "請輸入「{0}」以確認。",
         "reset_confirm_keyword": "刪除",
-        "reset_confirm_btn": "重置所有資料"
+        "reset_confirm_btn": "重置所有資料",
+        "date_created_suffix": "建立",
+        "date_updated_suffix": "修改"
     },
     "actions": {
         "settings": "設定",
@@ -34,7 +36,9 @@
         "collapse_sidebar": "收合側邊欄",
         "expand_sidebar": "展開側邊欄",
         "decrease_font": "縮小字體",
-        "increase_font": "放大字體"
+        "increase_font": "放大字體",
+        "pin": "釘選",
+        "unpin": "取消釘選"
     },
     "settings": {
         "title": "設定",
@@ -55,7 +59,10 @@
         "dismiss_btn": "暫不安裝",
         "install_manual_desc": "由於瀏覽器限制，請依照以下步驟手動安裝：",
         "install_chrome_desc": "點擊瀏覽器網址列右側的「安裝」圖示，或選單中的「安裝 LiteNote」。",
-        "install_safari_desc": "點擊下方的「分享」按鈕，然後選擇「加入主畫面」。"
+        "install_safari_desc": "點擊下方的「分享」按鈕，然後選擇「加入主畫面」。",
+        "sort_by": "排序方式",
+        "sort_updated": "編輯時間",
+        "sort_created": "建立時間"
     },
     "messages": {
         "fill_all": "請填寫所有欄位",

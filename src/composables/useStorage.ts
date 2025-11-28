@@ -7,6 +7,8 @@ export interface Note {
     content: string;
     title?: string;
     updatedAt: number;
+    createdAt: number;
+    isPinned?: boolean;
 }
 
 // Raw storage (persisted) - can be Array (legacy) or String (encrypted)
@@ -14,6 +16,7 @@ const rawStorage = useStorage<any>('litenote_notes', []);
 const cryptoSalt = useStorage<string>('litenote_salt', '');
 const passwordHash = useStorage<string | null>('litenote_password_hash', null);
 const lastActiveNoteId = useStorage<string | null>('litenote_last_active_id', null);
+const sortOption = useStorage<'updated' | 'created'>('litenote_sort_option', 'updated');
 
 // App state (in-memory, decrypted)
 const notes = ref<Note[]>([]);
@@ -79,6 +82,8 @@ export function useNoteStorage() {
             id: crypto.randomUUID(),
             content: '',
             updatedAt: Date.now(),
+            createdAt: Date.now(),
+            isPinned: false,
         };
         notes.value.unshift(newNote);
         lastActiveNoteId.value = newNote.id;
@@ -108,6 +113,13 @@ export function useNoteStorage() {
         if (note) {
             note.title = title;
             note.updatedAt = Date.now();
+        }
+    };
+
+    const togglePin = (id: string) => {
+        const note = notes.value.find(n => n.id === id);
+        if (note) {
+            note.isPinned = !note.isPinned;
         }
     };
 
@@ -157,6 +169,8 @@ export function useNoteStorage() {
         updateNote,
         updateNoteTitle,
         getNote,
-        changePin
+        changePin,
+        togglePin,
+        sortOption
     };
 }
