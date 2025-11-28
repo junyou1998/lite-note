@@ -128,13 +128,8 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.language')
             }}</label>
-            <select :value="locale" @change="e => setLocale((e.target as HTMLSelectElement).value)"
-              class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none">
-              <option value="auto">{{ t('settings.auto') }}</option>
-              <option value="zh-TW">繁體中文</option>
-              <option value="zh-CN">简体中文</option>
-              <option value="en">English</option>
-            </select>
+            <Dropdown :model-value="locale" @update:model-value="setLocale" :options="languageOptions" />
+
           </div>
 
           <!-- PWA Install Button (Always visible) -->
@@ -151,14 +146,14 @@
         <form v-if="activeTab === 'security'" class="space-y-4" @submit.prevent="handleChangePin">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.old_pin')
-            }}</label>
+              }}</label>
             <input v-model="oldPin" type="password" inputmode="numeric"
               class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
               :placeholder="t('settings.placeholder_old')" autocomplete="current-password" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.new_pin')
-            }}</label>
+              }}</label>
             <input v-model="newPin" type="password" inputmode="numeric" maxlength="6"
               class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
               :placeholder="t('settings.placeholder_new')" autocomplete="new-password" />
@@ -278,6 +273,7 @@ import { useTheme } from '../composables/useTheme';
 import { usePWA } from '../composables/usePWA';
 import { Plus, Trash2, Edit2, Sun, Moon, Monitor, MoreVertical, Settings, Info, Download, X } from 'lucide-vue-next';
 import Modal from './Modal.vue';
+import Dropdown from './Dropdown.vue';
 import { version } from '../../package.json';
 import { useI18n } from 'vue-i18n';
 import { setLocale, locale } from '../i18n';
@@ -321,6 +317,13 @@ const confirmNewPin = ref('');
 const settingsError = ref('');
 const settingsSuccess = ref('');
 const isChangingPin = ref(false);
+
+const languageOptions = computed(() => [
+  { label: t('settings.auto'), value: 'auto' },
+  { label: '繁體中文', value: 'zh-TW' },
+  { label: '简体中文', value: 'zh-CN' },
+  { label: 'English', value: 'en' }
+]);
 
 const settingsConfirmText = computed(() => {
   return activeTab.value === 'security' ? t('settings.change_pin') : t('actions.close');
