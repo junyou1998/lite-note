@@ -38,7 +38,11 @@
         "decrease_font": "縮小字體",
         "increase_font": "放大字體",
         "pin": "釘選",
-        "unpin": "取消釘選"
+        "unpin": "取消釘選",
+        "search": "搜尋",
+        "search_placeholder": "搜尋記事...",
+        "no_results": "找不到相關記事",
+        "command_k": "⌘ K"
     },
     "settings": {
         "title": "設定",

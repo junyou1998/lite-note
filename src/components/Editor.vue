@@ -4,16 +4,19 @@
     <div
       class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black z-10">
       <!-- Left: Sidebar Toggle -->
-      <div class="flex items-center">
+      <div class="flex items-center gap-3 flex-1 min-w-0 mr-2">
         <button @click="toggleDesktopSidebar"
           class="hidden md:flex p-2 -ml-2 text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
           :title="isDesktopSidebarOpen ? t('actions.collapse_sidebar') : t('actions.expand_sidebar')">
           <PanelLeft class="w-5 h-5" />
         </button>
+        <span v-if="currentNote" class="font-medium text-gray-700 dark:text-gray-300 truncate">
+          {{ currentNote.title || getTitle(currentNote.content) }}
+        </span>
       </div>
 
       <!-- Right: Tools -->
-      <div class="flex items-center">
+      <div class="flex items-center flex-shrink-0">
         <div class="flex items-center gap-2 border-r border-gray-200 dark:border-gray-800 pr-4 mr-4">
           <button @click="decreaseFontSize"
             class="p-1 text-gray-400 hover:text-black dark:text-gray-500 dark:hover:text-white transition-colors rounded hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -120,5 +123,10 @@ function downloadTxt() {
   link.download = `${safeTitle || 'note'}.txt`;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function getTitle(content: string) {
+  const firstLine = content.split('\n')[0]?.trim();
+  return firstLine || t('editor.untitled');
 }
 </script>

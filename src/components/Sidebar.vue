@@ -9,6 +9,11 @@
       class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-white dark:bg-gray-900/50 sm:bg-transparent backdrop-blur-sm">
       <h1 class="font-bold text-lg tracking-tight text-gray-900 dark:text-white">{{ t('app.title') }}</h1>
       <div class="flex items-center gap-1">
+        <button @click="openSearch"
+          class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-400"
+          :title="`${t('actions.search')} (${t('actions.command_k')})`">
+          <Search class="w-5 h-5" />
+        </button>
         <button @click="handleCreate"
           class="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-900 dark:text-white"
           :title="t('actions.add_note')">
@@ -43,7 +48,7 @@
           'z-40': mobileMenuId === note.id
         }" @dblclick="startRenaming(note)">
         <div v-if="renamingId === note.id" class="mr-2">
-          <input ref="renameInput" v-model="renameValue" @blur="finishRenaming" @keyup.enter="finishRenaming"
+          <input ref="renameInput" v-model="renameValue" @blur="finishRenaming" @keydown.enter="handleRenameKeydown"
             @click.stop
             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-sm text-gray-900 dark:text-white outline-none focus:border-gray-400 dark:focus:border-gray-500 focus:bg-white dark:focus:bg-gray-700 transition-all" />
         </div>
@@ -305,6 +310,9 @@
         </div>
       </div>
     </Modal>
+
+    <!-- Search Modal -->
+    <SearchModal :is-open="showSearchModal" :notes="notes" @close="showSearchModal = false" @select="selectNote" />
   </div>
 </template>
 
@@ -313,8 +321,9 @@ import { computed, ref, nextTick } from 'vue';
 import { useNoteStorage, type Note } from '../composables/useStorage';
 import { useTheme } from '../composables/useTheme';
 import { usePWA } from '../composables/usePWA';
-import { Plus, Trash2, Edit2, Sun, Moon, Monitor, MoreVertical, Settings, Info, Download, X, Pin, PinOff, ArrowUpDown } from 'lucide-vue-next';
+import { Plus, Trash2, Edit2, Sun, Moon, Monitor, MoreVertical, Settings, Info, Download, X, Pin, PinOff, ArrowUpDown, Search } from 'lucide-vue-next';
 import Modal from './Modal.vue';
+import SearchModal from './SearchModal.vue';
 import Dropdown from './Dropdown.vue';
 import { version } from '../../package.json';
 import { useI18n } from 'vue-i18n';
@@ -326,6 +335,31 @@ const { notes, lastActiveNoteId, createNote, deleteNote, updateNoteTitle, change
 const { theme, toggleTheme } = useTheme();
 const { t } = useI18n();
 const { canInstall, isDismissed, install, dismiss } = usePWA();
+
+// Search Logic
+const showSearchModal = ref(false);
+
+function openSearch() {
+  showSearchModal.value = true;
+}
+
+// Keyboard Shortcuts
+import { onMounted, onUnmounted } from 'vue';
+
+function handleKeydown(e: KeyboardEvent) {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    openSearch();
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown);
+});
 
 // About Logic
 const showAboutModal = ref(false);
@@ -509,6 +543,11 @@ function startRenaming(note: Note) {
   nextTick(() => {
     renameInput.value?.[0]?.focus();
   });
+}
+
+function handleRenameKeydown(e: KeyboardEvent) {
+  if (e.isComposing) return;
+  finishRenaming();
 }
 
 function finishRenaming() {

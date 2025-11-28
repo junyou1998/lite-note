@@ -38,7 +38,11 @@
         "decrease_font": "Decrease Font Size",
         "increase_font": "Increase Font Size",
         "pin": "Pin",
-        "unpin": "Unpin"
+        "unpin": "Unpin",
+        "search": "Search",
+        "search_placeholder": "Search notes...",
+        "no_results": "No results found",
+        "command_k": "⌘ K"
     },
     "settings": {
         "title": "Settings",

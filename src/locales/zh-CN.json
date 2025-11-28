@@ -38,7 +38,11 @@
         "decrease_font": "缩小字体",
         "increase_font": "放大字体",
         "pin": "置顶",
-        "unpin": "取消置顶"
+        "unpin": "取消置顶",
+        "search": "搜索",
+        "search_placeholder": "搜索笔记...",
+        "no_results": "找不到相关笔记",
+        "command_k": "⌘ K"
     },
     "settings": {
         "title": "设置",
